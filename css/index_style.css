@@ -1,0 +1,242 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap');
+
+:root {
+    --primary-color: #3498db;
+    --secondary-color: #2ecc71;
+    --background-color: #000000;
+    /* 更改为黑色 */
+    --text-color: #ffffff;
+    /* 更改为白色，以便在黑色背景上更易读 */
+    --header-height: 60px;
+    --header-bg-color: #111111;
+    /* 略微浅一点的黑色，用于header */
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 5px;
+}
+
+header {
+    background-color: var(--header-bg-color);
+    box-shadow: 0 2px 10px rgba(255, 255, 255, 0.1);
+    /* 调整阴影颜色 */
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+}
+
+header .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 0;
+}
+
+#logo {
+    height: 40px;
+    width: auto;
+    margin-bottom: 10px;
+}
+
+nav {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: none;
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+    padding: 5px 10px;
+}
+
+nav a:hover {
+    color: var(--primary-color);
+}
+
+nav a i {
+    margin-right: 5px;
+}
+
+#buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.button {
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.9em;
+    transition: all 0.3s ease;
+}
+
+.button:first-child {
+    background-color: var(--primary-color);
+    color: #fff;
+}
+
+.button:last-child {
+    background-color: var(--secondary-color);
+    color: #fff;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+main {
+    padding-top: calc(var(--header-height) + 10px);
+    min-height: calc(100vh - var(--header-height));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.hero {
+    text-align: center;
+    padding: 10px;
+    background: linear-gradient(135deg, #3498db, #8e44ad);
+    border-radius: 20px;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(255, 255, 255, 0.1);
+    /* 调整阴影颜色 */
+}
+
+h1 {
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    font-size: 1.2em;
+    margin-bottom: 10px;
+}
+
+.greeting {
+    font-size: 1em;
+    margin-bottom: 20px;
+}
+
+.cta-button {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #fff;
+    color: var(--primary-color);
+    text-decoration: none;
+    border-radius: 25px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(255, 255, 255, 0.2);
+    /* 调整阴影颜色 */
+}
+
+footer {
+    text-align: center;
+    padding: 5px 0;
+    background-color: var(--header-bg-color);
+    color: var(--text-color);
+    font-size: 0.9em;
+}
+
+/* 桌面端样式 */
+@media (min-width: 768px) {
+    :root {
+        --header-height: 60px;
+    }
+
+    header .container {
+        flex-direction: row;
+        justify-content: center;
+        /* 将整个header内容居中 */
+        padding: 0;
+        height: var(--header-height);
+    }
+
+    #logo {
+        margin-bottom: 0;
+        margin-right: 20px;
+        /* 为logo添加一些右侧间距 */
+    }
+
+    nav {
+        flex-grow: 0;
+        /* 防止nav自动扩展 */
+    }
+
+    nav a {
+        font-size: 1em;
+    }
+
+    .button {
+        font-size: 1em;
+    }
+
+    main {
+        padding-top: var(--header-height);
+    }
+
+    .hero {
+        padding: 40px;
+    }
+
+    h1 {
+        font-size: 3em;
+    }
+
+    .subtitle {
+        font-size: 1.5em;
+    }
+
+    .greeting {
+        font-size: 1.2em;
+    }
+
+    .cta-button {
+        padding: 12px 24px;
+    }
+}
+
+/* 大屏幕桌面端样式 */
+@media (min-width: 1200px) {
+    .container {
+        max-width: 1400px;
+    }
+
+    nav {
+        gap: 20px;
+    }
+
+    h1 {
+        font-size: 3.5em;
+    }
+}

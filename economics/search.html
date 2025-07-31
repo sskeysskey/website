@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>股票搜索</title>
+    <!-- 嵌入 CSS -->
+    <style>
+        :root {
+            --primary-color: #007bff;
+            --background-color: #121212;
+            --text-color: #fff;
+        }
+
+        html,
+        body {
+            height: 100%;
+            overflow-x: hidden;
+            /* 防止水平滚动 */
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            /* 稍微亮一点的深色背景 */
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #121212;
+            /* 添加背景色以便于区分 */
+            padding: 10px 0;
+            /* 添加一些内边距 */
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 10px auto;
+            /* 将上下边距从 50px 减少到 20px */
+            padding: 10px;
+            background-color: #fdfbfb;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+            font-size: 2.0rem;
+            /* 增大字体大小 */
+            font-weight: bold;
+            margin-top: 0;
+            /* 移除顶部边距 */
+            /* 加粗字体 */
+            /* text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); */
+            /* 添加文字阴影以增强可读性 */
+            margin-bottom: 10px;
+            /* 增加下方间距 */
+        }
+
+        #loading {
+            color: #007bff;
+            font-size: 18px;
+            font-weight: bold;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 5px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 1000;
+        }
+
+        .searching {
+            color: white;
+        }
+
+        .input-container {
+            display: flex;
+            margin-bottom: 20px;
+            flex-direction: row;
+            /* 确保默认为行方向 */
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+            display: flex;
+            align-items: center;
+        }
+
+        .clear-button {
+            position: absolute;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 24px;
+            /* 增大字体大小 */
+            cursor: pointer;
+            color: #999;
+            padding: 5px;
+            /* 增加内边距 */
+            margin: 0;
+            width: 30px;
+            /* 设置固定宽度 */
+            height: 30px;
+            /* 设置固定高度 */
+            line-height: 1;
+            /* 确保垂直居中 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            /* 使按钮呈圆形 */
+            transition: background-color 0.3s, color 0.3s;
+            /* 添加过渡效果 */
+        }
+
+        .clear-button:hover {
+            color: #333;
+            background-color: #f0f0f0;
+            /* 悬停时添加背景色 */
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding-right: 40px;
+            /* 增加右侧内边距，为更大的按钮留出空间 */
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 18px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+        }
+
+        .results {
+            margin-top: 20px;
+        }
+
+        .results-container {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            /* 为 iOS 设备提供平滑滚动 */
+        }
+
+        .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+            border-radius: 10px;
+        }
+
+        .result-category {
+            font-size: 18px;
+            color: blue;
+            margin-top: 10px;
+        }
+
+        .result-item {
+            font-size: 16px;
+            color: black;
+            text-decoration: underline;
+            margin: 5px 0;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:hover {
+            transform: translateX(5px);
+            color: #060606;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* 搜索历史记录样式 */
+        .search-history {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .search-history ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            position: absolute;
+            width: 100%;
+            z-index: 500;
+            /* 确保在搜索结果之上 */
+        }
+
+        .search-history ul li {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .search-history ul li:last-child {
+            border-bottom: none;
+        }
+
+        .search-history ul li:hover {
+            background-color: #f0f0f0;
+        }
+
+        .delete-history-item {
+            background-color: white;
+            /* 设置背景颜色为白色 */
+            color: black;
+            /* 设置文字颜色为黑色 */
+            border: none;
+            /* 移除默认边框 */
+            padding: 2px 5px;
+            /* 减小按钮的内边距 */
+            border-radius: 50%;
+            /* 将按钮形状设置为圆形 */
+            font-size: 12px;
+            /* 调整字体大小 */
+            cursor: pointer;
+            /* 鼠标悬停时显示为手指 */
+            margin-left: 10px;
+            /* 添加与文本的间距 */
+            width: 20px;
+            /* 设置按钮宽度 */
+            height: 20px;
+            /* 设置按钮高度 */
+            line-height: 16px;
+            /* 调整行高，使 "×" 居中 */
+            display: inline-flex;
+            /* 使用 flex 布局 */
+            justify-content: center;
+            /* 水平居中 */
+            align-items: center;
+            /* 垂直居中 */
+        }
+
+        /* 删除按钮的悬停效果 */
+        .delete-history-item:hover {
+            background-color: #333;
+            /* 悬停时背景变为深灰色 */
+        }
+
+        @media (max-width: 767px) {
+            /* 移除对 .modal-dialog 的自定义样式，依赖 Bootstrap */
+
+            .modal-content {
+                max-height: 80vh;
+                overflow-y: auto;
+                border-radius: 10px;
+            }
+
+            .modal-body {
+                padding: 15px;
+            }
+
+            /* 处理输入框容器的布局 */
+            .input-container {
+                flex-direction: column;
+            }
+
+            input[type="text"] {
+                margin-bottom: 10px;
+            }
+
+            button {
+                width: 100%;
+                margin-left: 0;
+            }
+
+            .search-history ul {
+                max-height: 250px;
+            }
+        }
+    </style>
+
+    <!-- 引入 Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/index.html"><i class="fas fa-index"></i> 首页</a>
+                <a href="/about.html#games"><i class="fas fa-gamepad"></i> 游戏</a>
+                <a href="/news.html"><i class="fas fa-newspaper"></i> 新闻</a>
+                <a href="finance.html"><i class="fas fa-chart-line"></i> 经济</a>
+                <a href="stock.html"><i class="fas fa-search"></i> 股票</a>
+                <a href="/books.html"><i class="fas fa-book"></i> 书籍</a>
+                <a href="/tools.html"><i class="fas fa-tools"></i> 工具</a>
+                <!-- <a href="privacy.html"><i class="fas fa-user-shield"></i> 隐私</a> -->
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>股票搜索</h1>
+        <div class="input-container">
+            <div class="input-wrapper">
+                <input type="text" id="searchInput" placeholder="请输入要搜索的关键字" />
+                <button id="clearButton" class="clear-button" style="display: none;">&times;</button>
+            </div>
+            <button id="searchButton" onclick="startSearch()">搜索</button>
+        </div>
+
+        <!-- 新增：搜索历史记录列表 -->
+        <div id="searchHistory" class="search-history" style="display: none;">
+            <ul id="historyList"></ul>
+        </div>
+
+        <div id="loading" style="display: none; text-align: center;">正在搜索...</div>
+        <div class="results" id="results"></div>
+    </div>
+
+    <!-- 添加模态框 HTML -->
+    <div class="modal fade" id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="chartModalLabel" class="modal-title">价格走势图</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- 添加加载指示器 -->
+                    <div id="chartLoading" style="display: none; text-align: center; margin-bottom: 10px;">
+                        页面加载中...
+                    </div>
+                    <canvas id="priceChart" style="width: 100%; height: 50vh;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入 Bootstrap JS 和依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js" defer></script>
+    <!-- 引入 Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+    <!-- 嵌入 JavaScript -->
+    <script>
+        // 页面加载完成后的初始化函数
+        function initializePage() {
+            const searchInput = document.getElementById('searchInput');
+            const clearButton = document.getElementById('clearButton');
+            const searchHistory = document.getElementById('searchHistory');
+
+            // 自动聚焦输入框
+            searchInput.focus();
+
+            function toggleClearButton() {
+                clearButton.style.display = searchInput.value ? 'block' : 'none';
+            }
+
+            searchInput.addEventListener('input', function () {
+                toggleClearButton();
+                if (searchInput.value.trim() === '') {
+                    showSearchHistory();  // 输入框为空时显示搜索历史
+                }
+            });
+
+            clearButton.addEventListener('click', function () {
+                searchInput.value = '';
+                toggleClearButton();
+                searchInput.focus();
+                setTimeout(() => {
+                    showSearchHistory();
+                }, 0);
+            });
+
+            // 初始化时检查一次
+            toggleClearButton();
+
+            // 监听回车按键进行搜索
+            searchInput.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter') {
+                    startSearch();
+                }
+            });
+
+            // 添加document的点击事件监听器
+            document.addEventListener('click', function (event) {
+                // 检查点击的目标元素是否在搜索历史区域内
+                const isClickInsideHistory = searchHistory.contains(event.target);
+                // 检查点击的目标元素是否是搜索输入框
+                const isClickInsideInput = searchInput.contains(event.target);
+
+                // 如果点击既不在搜索历史区域内，也不在输入框内，则隐藏搜索历史
+                if (!isClickInsideHistory && !isClickInsideInput) {
+                    hideSearchHistory();
+                }
+            });
+
+            // 防止搜索历史区域的点击事件冒泡到document
+            searchHistory.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+
+            // 防止搜索输入框的点击事件冒泡到document
+            searchInput.addEventListener('click', function (event) {
+                event.stopPropagation();
+            });
+
+            // 显示搜索历史
+            showSearchHistory();
+
+            // 添加输入框事件监听
+            searchInput.addEventListener('focus', showSearchHistory);
+            searchInput.addEventListener('click', showSearchHistory);
+        }
+
+        // 页面切换时重新初始化
+        document.addEventListener('visibilitychange', function () {
+            if (!document.hidden) {
+                initializePage();  // 页面从后台切换到前台时重新初始化
+            }
+        });
+
+        // 页面加载完成后执行初始化
+        window.addEventListener('load', initializePage);
+
+
+        // 搜索历史记录相关常量
+        const MAX_HISTORY = 5;
+        const HISTORY_KEY = 'stockSearchHistory';
+
+        // 获取搜索历史记录
+        function getSearchHistory() {
+            try {
+                const history = localStorage.getItem(HISTORY_KEY);
+                return history ? JSON.parse(history) : [];
+            } catch (error) {
+                console.error('获取搜索历史失败:', error);
+                return [];
+            }
+        }
+
+        // 添加新搜索记录
+        function addSearchHistory(term) {
+            if (!term || typeof term !== 'string') return;
+
+            try {
+                let history = getSearchHistory();
+                const trimmedTerm = term.trim();
+
+                if (!trimmedTerm) return;
+
+                // 移除重复项
+                history = history.filter(item =>
+                    item.toLowerCase() !== trimmedTerm.toLowerCase()
+                );
+
+                // 添加到最前面
+                history.unshift(trimmedTerm);
+
+                // 保持最大长度
+                if (history.length > MAX_HISTORY) {
+                    history = history.slice(0, MAX_HISTORY);
+                }
+
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            } catch (error) {
+                console.error('保存搜索历史失败:', error);
+            }
+        }
+
+        // 删除指定的搜索历史记录
+        function removeSearchHistory(term) {
+            if (!term) return;
+
+            try {
+                let history = getSearchHistory();
+
+                // 过滤掉要删除的项
+                history = history.filter(item =>
+                    item.toLowerCase() !== term.toLowerCase()
+                );
+
+                // 更新本地存储
+                localStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+            } catch (error) {
+                console.error('删除搜索历史失败:', error);
+            }
+        }
+
+        // 显示搜索历史记录
+        function showSearchHistory() {
+            const searchInput = document.getElementById('searchInput');
+            const searchHistory = document.getElementById('searchHistory');
+            const historyList = document.getElementById('historyList');
+
+            if (!searchInput || !searchHistory || !historyList) return;
+
+            const inputValue = searchInput.value.trim();
+
+            if (inputValue !== '') {
+                hideSearchHistory();
+                return;
+            }
+
+            const history = getSearchHistory();
+
+            if (history.length === 0) {
+                hideSearchHistory();
+                return;
+            }
+
+            historyList.innerHTML = ''; // 清空现有列表
+
+            history.forEach(item => {
+                const li = document.createElement('li');
+
+                // 创建文本节点
+                const textSpan = document.createElement('span');
+                textSpan.textContent = item;
+                textSpan.className = 'history-text';
+
+                // 创建删除按钮
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = '×';
+                deleteButton.className = 'delete-history-item';
+                deleteButton.setAttribute('type', 'button');
+
+                // 为删除按钮绑定点击事件
+                deleteButton.addEventListener('click', (event) => {
+                    event.stopPropagation();  // 防止点击事件冒泡到 li
+                    removeSearchHistory(item);  // 删除该条历史记录
+                    showSearchHistory();  // 重新显示更新后的历史记录
+                });
+
+                li.appendChild(textSpan);
+                li.appendChild(deleteButton);
+
+                // 为历史记录项绑定点击事件
+                li.addEventListener('click', () => {
+                    searchInput.value = item;
+                    hideSearchHistory();
+                    startSearch();
+                });
+
+                historyList.appendChild(li);
+            });
+
+            searchHistory.style.display = 'block';
+        }
+
+        // 隐藏搜索历史记录
+        function hideSearchHistory() {
+            document.getElementById('searchHistory').style.display = 'none';
+        }
+
+        // 全局变量缓存 sectors, finance 数据和 compare 数据
+        let sectorsData = null;
+        let financeData = null;
+        let compareData = null; // 新增全局变量存储 compare_all 数据
+
+        // JSON文件路径
+        const jsonPath = "description.json";
+        const sectorsPath = "sectors_all.json";
+        const financePath = "finance.json";
+        const marketCapFilePath = "marketcap_pe.txt";
+        const compareFilePath = "compare_all.txt";  // compare_all.txt 文件路径
+
+        // 定义全局变量存储 marketcap_pe 数据
+        let marketCapData = null;
+
+        // 新增：加载 compare_all.txt 文件
+        async function loadCompareData() {
+            if (compareData) return compareData;
+            try {
+                const response = await fetch(compareFilePath);
+                if (!response.ok) throw new Error(`无法加载 compare 数据: ${response.status}`);
+                const text = await response.text();
+                compareData = parseCompareData(text);
+                console.log("compareData:", compareData);  // 输出 compareData 以检查其格式
+                return compareData;
+            } catch (error) {
+                console.error(error);
+                alert("加载 compare 数据时出错。");
+            }
+        }
+
+        // 解析 compare_all.txt 数据
+        function parseCompareData(text) {
+            const data = {};
+            const lines = text.split("\n");
+            for (let line of lines) {
+                const [symbol, value] = line.split(": ");
+                if (symbol && value) {
+                    console.log(`Parsed line: symbol=${symbol}, value=${value}`);  // 输出解析的每一行
+                    data[symbol.toUpperCase()] = value.trim();
+                }
+            }
+            return data;
+        }
+
+        // 加载 marketcap_pe.txt 文件
+        async function loadMarketCapData() {
+            if (marketCapData) return marketCapData;
+            try {
+                const response = await fetch(marketCapFilePath);
+                if (!response.ok) throw new Error(`无法加载 MarketCap 数据: ${response.status}`);
+                const text = await response.text();
+                marketCapData = parseMarketCapData(text);
+                return marketCapData;
+            } catch (error) {
+                console.error(error);
+                alert("加载 MarketCap 数据时出错。");
+            }
+        }
+
+        // 解析 marketcap_pe.txt 数据
+        function parseMarketCapData(text) {
+            const data = {};
+            const lines = text.split("\n");
+            for (let line of lines) {
+                const [symbol, values] = line.split(": ");
+                if (symbol && values) {
+                    const [marketCap, peRatio] = values.split(", ");
+                    const parsedMarketCap = parseFloat(marketCap);
+                    // 如果 peRatio 为 "--"，则保留为字符串 "--"，否则解析为数字
+                    const parsedPeRatio = peRatio === "--" ? "--" : parseFloat(peRatio);
+                    data[symbol.toUpperCase()] = { marketCap: parsedMarketCap, peRatio: parsedPeRatio };
+                }
+            }
+            return data;
+        }
+
+        // 将 marketCap 转换为 Billion
+        function formatMarketCap(marketCap) {
+            return (marketCap / 1e9).toFixed(1) + "B"; // 将单位转换为 Billion
+        }
+
+        // 加载 sectors_all.json
+        async function loadSectors() {
+            if (sectorsData) return sectorsData;
+            try {
+                const response = await fetch(sectorsPath, { mode: 'cors' });
+                if (!response.ok) throw new Error(`无法加载 sectors 数据: ${response.status}`);
+                sectorsData = await response.json();
+                return sectorsData;
+            } catch (error) {
+                console.error(error);
+                alert("加载 sectors 数据时出错。");
+            }
+        }
+
+        // 加载 finance.json
+        async function loadFinance() {
+            if (financeData) return financeData;
+            try {
+                const response = await fetch(financePath, { mode: 'cors' });
+                if (!response.ok) throw new Error(`无法加载 finance 数据: ${response.status}`);
+                financeData = await response.json();
+                return financeData;
+            } catch (error) {
+                console.error(error);
+                alert("加载 finance 数据时出错。");
+            }
+        }
+
+        // Levenshtein距离计算函数
+        function levenshteinDistance(a, b) {
+            const an = a ? a.length : 0;
+            const bn = b ? b.length : 0;
+            if (an === 0) return bn;
+            if (bn === 0) return an;
+
+            let matrix = Array(an + 1);
+            for (let i = 0; i <= an; i++) {
+                matrix[i] = Array(bn + 1).fill(0);
+                matrix[i][0] = i;
+            }
+            for (let j = 0; j <= bn; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= an; i++) {
+                for (let j = 1; j <= bn; j++) {
+                    let cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return matrix[an][bn];
+        }
+
+        // 执行搜索
+        async function startSearch() {
+            const keywords = document.getElementById('searchInput').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('results');
+            const loadingIndicator = document.getElementById('loading');
+            const searchButton = document.getElementById('searchButton');
+
+            if (!keywords) return;
+
+            // 添加到搜索历史
+            addSearchHistory(document.getElementById('searchInput').value.trim());
+
+            // 隐藏搜索历史
+            hideSearchHistory();
+
+            // 禁用搜索按钮
+            searchButton.disabled = true;
+
+            // 显示加载指示器
+            loadingIndicator.style.display = 'block';
+            // 清空之前的搜索结果
+            resultsContainer.innerHTML = '';
+
+            try {
+                // 读取JSON文件
+                const response = await fetch(jsonPath, { mode: 'cors' });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+
+                const keywordsArray = keywords.split(/\s+/).map(k => k.toLowerCase());
+
+                // 搜索股票和ETF
+                const matchedStocks = searchCategory(data.stocks, keywordsArray, 'stocks');
+                const matchedETFs = searchCategory(data.etfs, keywordsArray, 'etfs');
+
+                // 加载 MarketCap 数据
+                const marketCapData = await loadMarketCapData();
+
+                // 加载 Finance 数据
+                const financeData = await loadFinance(); // 加载 finance.json 数据
+                const compareData = await loadCompareData();  // 新增：加载 compare 数据
+
+                // Check for spaces in the search keywords
+                const hasSpaces = keywordsArray.length > 1;
+
+                // 创建结果收集器
+                let resultsToDisplay = [];
+
+                // 修改 addToResults 函数的优先级逻辑
+                function addToResults(category, matches, type, source) {
+                    if (matches.exact.length > 0 || matches.partial.length > 0 || matches.fuzzy.length > 0) {
+                        const isDescription = category.includes('Description');
+                        resultsToDisplay.push({
+                            category,
+                            matches,
+                            type,
+                            source,
+                            // 描述类别优先级固定为最低(100)，其他类别按匹配程度排序
+                            priority: isDescription ? 100 : (
+                                matches.exact.length > 0 ? 0 : // 精确匹配最高优先级
+                                    matches.partial.length > 0 ? 1 : // 部分匹配次之
+                                        2  // 模糊匹配最后
+                            )
+                        });
+                    }
+                }
+
+                // 收集所有结果
+                if (hasSpaces) {
+                    // 按原顺序收集结果
+                    addToResults('Stock_name', matchedStocks.name, 'stocks', 'name');
+                    addToResults('ETF_name', matchedETFs.name, 'etfs', 'name');
+                    addToResults('Stock_tag', matchedStocks.tag, 'stocks', 'tag');
+                    addToResults('ETF_tag', matchedETFs.tag, 'etfs', 'tag');
+                    addToResults('Stock_symbol', matchedStocks.symbol, 'stocks', 'symbol');
+                    addToResults('ETF_symbol', matchedETFs.symbol, 'etfs', 'symbol');
+                } else {
+                    addToResults('Stock_symbol', matchedStocks.symbol, 'stocks', 'symbol');
+                    addToResults('ETF_symbol', matchedETFs.symbol, 'etfs', 'symbol');
+                    addToResults('Stock_name', matchedStocks.name, 'stocks', 'name');
+                    addToResults('Stock_tag', matchedStocks.tag, 'stocks', 'tag');
+                    addToResults('ETF_tag', matchedETFs.tag, 'etfs', 'tag');
+                    addToResults('ETF_name', matchedETFs.name, 'etfs', 'name');
+                }
+
+                // Description 永远最后显示
+                addToResults('Stock_Description', matchedStocks.description, 'stocks', 'description');
+                addToResults('ETFs_Description', matchedETFs.description, 'etfs', 'description');
+
+                // 修改排序逻辑
+                resultsToDisplay.sort((a, b) => {
+                    // 首先处理 Description，确保它们永远在最后
+                    const aIsDesc = a.category.includes('Description');
+                    const bIsDesc = b.category.includes('Description');
+                    if (aIsDesc !== bIsDesc) {
+                        return aIsDesc ? 1 : -1;
+                    }
+
+                    // 如果都不是 Description，按照之前的逻辑排序
+                    if (!aIsDesc && !bIsDesc) {
+                        // 首先按是否有精确匹配排序
+                        if (a.matches.exact.length !== b.matches.exact.length) {
+                            return a.matches.exact.length > 0 ? -1 : 1;
+                        }
+
+                        // 其次按优先级排序
+                        if (a.priority !== b.priority) {
+                            return a.priority - b.priority;
+                        }
+
+                        // 最后按类别排序
+                        const categoryOrder = {
+                            'Stock_symbol': 0,
+                            'ETF_symbol': 1,
+                            'Stock_name': 2,
+                            'ETF_name': 3,
+                            'Stock_tag': 4,
+                            'ETF_tag': 5
+                        };
+
+                        return categoryOrder[a.category] - categoryOrder[b.category];
+                    }
+
+                    // 如果都是 Description，保持原有顺序
+                    return resultsToDisplay.indexOf(a) - resultsToDisplay.indexOf(b);
+                });
+
+                // 显示排序后的结果
+                let hasResults = false;
+                for (const result of resultsToDisplay) {
+                    hasResults |= displayResults(
+                        result.category,
+                        result.matches,
+                        marketCapData,
+                        result.type,
+                        compareData
+                    );
+                }
+
+                if (!hasResults) {
+                    resultsContainer.innerHTML = '<div class="no-results">没有搜索到任何结果</div>';
+                } else {
+                    // 为所有结果项添加点击事件
+                    addResultClickListeners();
+                }
+
+            } catch (error) {
+                console.error("搜索出错:", error);
+                resultsContainer.innerHTML = `<div class="error">搜索时发生错误: ${error.message}</div>`;
+            } finally {
+                // 隐藏加载指示器
+                loadingIndicator.style.display = 'none';
+                // 重新启用搜索按钮
+                searchButton.disabled = false;
+            }
+        }
+
+        // 辅助函数：根据关键字长度决定是否进行模糊匹配
+        function shouldFuzzyMatch(keyword) {
+            return keyword.length > 1;
+        }
+
+        // Levenshtein距离计算函数
+        function levenshteinDistance(a, b) {
+            const an = a ? a.length : 0;
+            const bn = b ? b.length : 0;
+            if (an === 0) return bn;
+            if (bn === 0) return an;
+
+            let matrix = Array(an + 1);
+            for (let i = 0; i <= an; i++) {
+                matrix[i] = Array(bn + 1).fill(0);
+                matrix[i][0] = i;
+            }
+            for (let j = 0; j <= bn; j++) {
+                matrix[0][j] = j;
+            }
+
+            for (let i = 1; i <= an; i++) {
+                for (let j = 1; j <= bn; j++) {
+                    let cost = a[i - 1] === b[j - 1] ? 0 : 1;
+                    matrix[i][j] = Math.min(
+                        matrix[i - 1][j] + 1,
+                        matrix[i][j - 1] + 1,
+                        matrix[i - 1][j - 1] + cost
+                    );
+                }
+            }
+            return matrix[an][bn];
+        }
+
+        // 搜索特定类别
+        function searchCategory(items, keywordsArray, category) {
+            const results = {
+                tag: { exact: [], partial: [], fuzzy: [] },
+                name: { exact: [], partial: [], fuzzy: [] },
+                symbol: { exact: [], partial: [], fuzzy: [] },
+                description: { exact: [], partial: [], fuzzy: [] }
+            };
+
+            // 如果是多关键词搜索
+            const isMultiKeywordSearch = keywordsArray.length > 1;
+
+            items.forEach(item => {
+                const descriptionText = (item.description1 + ' ' + item.description2).toLowerCase();
+
+                // Symbol匹配 - 必须所有关键词都匹配
+                const symbolMatches = {
+                    exact: keywordsArray.every(k => item.symbol.toLowerCase() === k),
+                    partial: keywordsArray.every(k => item.symbol.toLowerCase().includes(k)),
+                    fuzzy: keywordsArray.every(k =>
+                        shouldFuzzyMatch(k) && levenshteinDistance(item.symbol.toLowerCase(), k) <= 1
+                    )
+                };
+
+                // Name匹配 - 必须所有关键词都匹配
+                const nameMatches = {
+                    exact: item.name && keywordsArray.every(k => item.name.toLowerCase() === k),
+                    partial: item.name && keywordsArray.every(k => item.name.toLowerCase().includes(k)),
+                    fuzzy: item.name && keywordsArray.every(k =>
+                        shouldFuzzyMatch(k) && levenshteinDistance(item.name.toLowerCase(), k) <= 1
+                    )
+                };
+
+                // Tag匹配 - 两种匹配方式
+                const tagMatches = {
+                    exact: false,
+                    partial: false,
+                    fuzzy: false
+                };
+
+                if (isMultiKeywordSearch) {
+                    // 方式1：每个tag必须包含所有关键词
+                    const tagContainsAllKeywords = item.tag.some(tag =>
+                        keywordsArray.every(k => tag.toLowerCase().includes(k))
+                    );
+
+                    // 方式2：关键词分别匹配不同的tag
+                    const keywordsMatchDifferentTags = keywordsArray.every(keyword =>
+                        item.tag.some(tag => tag.toLowerCase().includes(keyword))
+                    );
+
+                    // 只要满足任一方式即可
+                    tagMatches.partial = tagContainsAllKeywords || keywordsMatchDifferentTags;
+                } else {
+                    // 单关键词搜索保持原有逻辑
+                    tagMatches.exact = keywordsArray.some(k =>
+                        item.tag.some(tag => tag.toLowerCase() === k)
+                    );
+                    tagMatches.partial = keywordsArray.some(k =>
+                        item.tag.some(tag => tag.toLowerCase().includes(k))
+                    );
+                    tagMatches.fuzzy = keywordsArray.some(k =>
+                        shouldFuzzyMatch(k) && item.tag.some(tag =>
+                            levenshteinDistance(tag.toLowerCase(), k) <= 1
+                        )
+                    );
+                }
+
+                // Symbol结果分类
+                if (symbolMatches.exact) results.symbol.exact.push(item);
+                else if (symbolMatches.partial) results.symbol.partial.push(item);
+                else if (symbolMatches.fuzzy) results.symbol.fuzzy.push(item);
+
+                // Name结果分类
+                if (nameMatches.exact) results.name.exact.push(item);
+                else if (nameMatches.partial) results.name.partial.push(item);
+                else if (nameMatches.fuzzy) results.name.fuzzy.push(item);
+
+                // Tag结果分类
+                if (tagMatches.exact) results.tag.exact.push(item);
+                else if (tagMatches.partial) results.tag.partial.push(item);
+                else if (tagMatches.fuzzy) results.tag.fuzzy.push(item);
+
+                // Description匹配保持不变
+                if (keywordsArray.every(k => descriptionText.includes(k))) {
+                    results.description.exact.push(item);
+                }
+            });
+
+            return results;
+        }
+
+        // 显示搜索结果
+        function displayResults(category, results, marketCapData, itemType, compareData = null) {
+            const resultsContainer = document.getElementById('results');
+            if (results.exact.length > 0 || results.partial.length > 0 || results.fuzzy.length > 0) {
+                const categoryElement = document.createElement('div');
+                categoryElement.className = 'result-category';
+                categoryElement.textContent = category;
+                resultsContainer.appendChild(categoryElement);
+
+                // 按顺序合并结果
+                const combinedResults = [...results.exact, ...results.partial, ...results.fuzzy];
+
+                combinedResults.forEach(result => {
+                    const resultElement = document.createElement('div');
+                    resultElement.className = 'result-item';
+                    let resultText = `${result.symbol} - ${result.name} - ${result.tag.join(', ')}`;
+
+                    // 新增：与 compareData 中的 symbol 匹配，并附加 compare 值
+                    if (compareData && compareData[result.symbol.toUpperCase()]) {
+                        const compareValue = compareData[result.symbol.toUpperCase()];
+                        if (compareValue) {
+                            resultText += ` ${compareValue}`;
+                        }
+                    }
+
+                    // 如果是股票类，尝试查找 MarketCap 和 PE Ratio
+                    if (itemType === 'stocks') {
+                        const marketCapInfo = marketCapData[result.symbol.toUpperCase()];
+                        if (marketCapInfo) {
+                            const formattedMarketCap = formatMarketCap(marketCapInfo.marketCap); // 格式化marketcap为Billion
+                            const peRatio = marketCapInfo.peRatio === "--" ? "--" : marketCapInfo.peRatio.toFixed(2);
+                            resultText += ` ${formattedMarketCap} ${peRatio}`;
+                        }
+                    }
+
+                    // 如果是 ETF 类，查找 finance.json 中的 volume 信息
+                    if (itemType === 'etfs') {
+                        const etfData = financeData.ETFs.find(etf => etf.name.toUpperCase() === result.symbol.toUpperCase());
+                        if (etfData && etfData.volume) {
+                            const formattedVolume = `${(etfData.volume / 1000).toFixed(0)}K`; // 将 volume 转换为 K 单位
+                            resultText += ` ${formattedVolume}`;
+                        }
+                    }
+
+                    resultElement.textContent = resultText;
+
+                    // 设置 data-symbol 属性以存储 symbol
+                    const symbol = result.symbol;
+                    resultElement.setAttribute('data-symbol', symbol.toUpperCase());
+
+                    // 设置 data-type 属性为 stocks 或 etfs
+                    resultElement.setAttribute('data-type', itemType);
+
+                    resultElement.style.cursor = 'pointer'; // 显示为可点击
+                    resultsContainer.appendChild(resultElement);
+                });
+
+                return true; // 表示有结果
+            }
+            return false; // 表示没有结果
+        }
+
+        // 为搜索结果项添加点击事件监听器
+        function addResultClickListeners() {
+            const resultItems = document.querySelectorAll('.result-item');
+            resultItems.forEach(item => {
+                item.addEventListener('click', handleItemClick);
+            });
+        }
+
+        async function handleItemClick(event) {
+            event.preventDefault(); // 防止默认行为
+            // 添加这个检查
+            if (document.body.classList.contains('modal-open')) {
+                return; // 如果模态框已经打开，不执行任何操作
+            }
+
+            const symbol = this.getAttribute('data-symbol');
+            const itemType = this.getAttribute('data-type');  // 获取是 stocks 还是 etfs
+
+            if (!symbol) {
+                alert("无效的股票代码。");
+                return;
+            }
+
+            // 显示加载提示
+            const chartLoading = document.getElementById('chartLoading');
+            chartLoading.style.display = 'block';
+
+            try {
+                // 加载 sectors 和 finance 数据
+                const sectors = await loadSectors();
+                const finance = await loadFinance();
+
+                if (!sectors || !finance) {
+                    throw new Error("无法加载必要的数据。");
+                }
+
+                // 查找 symbol 对应的 sector
+                let sectorFound = null;
+                for (const [sector, symbols] of Object.entries(sectors)) {
+                    // 注意：确保 symbol 与 sectors 的符号类型一致（可能大小写或格式不同）
+                    if (symbols.map(s => s.toUpperCase()).includes(symbol.toUpperCase())) {
+                        sectorFound = sector;
+                        break;
+                    }
+                }
+
+                if (!sectorFound) {
+                    alert(`未找到 symbol "${symbol}" 对应的 sector。`);
+                    return;
+                }
+
+                // 从 finance 数据中获取该 sector 和 symbol 的数据
+                if (!finance[sectorFound]) {
+                    alert(`Finance 数据中未包含 sector "${sectorFound}"。`);
+                    return;
+                }
+
+                const symbolData = finance[sectorFound].filter(item => item.name.toUpperCase() === symbol.toUpperCase());
+                if (symbolData.length === 0) {
+                    alert(`Finance 数据中未找到 symbol "${symbol}" 的数据。`);
+                    return;
+                }
+
+                // 假设 finance.json 中每个 symbol 只有一条记录，如果有多条，可根据需要调整
+                // 如果有多条记录，例如不同日期，可以累积成多个数据点
+                const sortedData = symbolData.sort((a, b) => new Date(a.date) - new Date(b.date));
+                const labels = sortedData.map(item => item.date);
+                const prices = sortedData.map(item => item.price);
+
+                // 如果是股票类型，则加载 MarketCap 和 PE Ratio 数据
+                let marketCap = "";
+                let peRatio = "";
+
+                if (itemType === 'stocks') {
+                    const marketCapData = await loadMarketCapData(); // 加载 MarketCap 数据
+                    const marketCapInfo = marketCapData[symbol.toUpperCase()] || {};  // 使用空对象作为默认值
+                    marketCap = marketCapInfo.marketCap ? formatMarketCap(marketCapInfo.marketCap) : "";
+                    peRatio = marketCapInfo.peRatio === undefined || marketCapInfo.peRatio === "--" ? "" : marketCapInfo.peRatio.toFixed(2);
+                }
+
+                // 更新图表标题（去掉 "价格走势图" 并根据类型显示 MarketCap 和 PE）
+                const chartTitle = itemType === 'stocks' ? `${symbol} ${marketCap} ${peRatio}` : `${symbol}`;
+                drawChart(chartTitle, labels, prices);
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                // 隐藏加载提示
+                chartLoading.style.display = 'none';
+            }
+        }
+
+        // 绘制Chart.js图表
+        function drawChart(title, labels, data) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+
+            // 释放之前的图表实例（如果有）
+            if (window.priceChartInstance) {
+                window.priceChartInstance.destroy();
+            }
+
+            // 检测是否为移动设备
+            const isMobile = window.innerWidth <= 768;
+
+            // 检查数据是否足够计算百分比变化
+            if (data.length > 1) {
+                // 计算最新价格和最早价格
+                const latestPrice = data[data.length - 1];
+                const earliestPrice = data[0];
+
+                // 计算百分比变化
+                const priceChangePercentage = ((latestPrice - earliestPrice) / earliestPrice) * 100;
+
+                // 格式化为百分比并添加到标题
+                title += ` (${priceChangePercentage.toFixed(2)}%)`;
+            } else {
+                // 如果数据不足，提示不可计算
+                title += ' (N/A)';
+            }
+
+            window.priceChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: '价格趋势',
+                        data: data,
+                        borderColor: '#007bff',
+                        backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                        fill: true,
+                        tension: 0.1,
+                        borderWidth: isMobile ? 1 : 2, // 在移动设备上使用更细的线条
+                        pointRadius: 0, // 移除数据点
+                        pointHitRadius: 5 // 增加点击/触摸区域，但不显示点
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: function (context) {
+                                    return '价格: $' + context.parsed.y.toFixed(2);
+                                }
+                            }
+                        },
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false // 隐藏 X 轴刻度
+                            }
+                        },
+                        y: {
+                            display: true,
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                display: false // 隐藏 Y 轴刻度
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        intersect: false,
+                        axis: 'x'
+                    },
+                    elements: {
+                        line: {
+                            borderWidth: isMobile ? 1 : 2 // 在移动设备上使用更细的线条
+                        }
+                    }
+                }
+            });
+
+            // 设置模态框标题，包含百分比变化
+            document.getElementById('chartModalLabel').textContent = title;
+
+            // 显示模态框
+            const chartModal = new bootstrap.Modal(document.getElementById('chartModal'));
+            chartModal.show();
+
+            // 添加这段新代码
+            document.getElementById('chartModal').addEventListener('hidden.bs.modal', function () {
+                document.body.classList.remove('modal-open');
+                const modalBackdrop = document.querySelector('.modal-backdrop');
+                if (modalBackdrop) {
+                    modalBackdrop.remove();
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

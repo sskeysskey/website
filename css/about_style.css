@@ -1,0 +1,278 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: #333;
+    background-color: #f4f4f4;
+}
+
+.container {
+    width: 90%;
+    margin: auto;
+    overflow: hidden;
+}
+
+header {
+    background: #35424a;
+    color: #ffffff;
+    padding-top: 30px;
+    min-height: 70px;
+    border-bottom: #e8491d 3px solid;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+}
+
+nav a {
+    color: #ffffff;
+    text-decoration: none;
+    padding: 10px 15px;
+    transition: 0.3s;
+}
+
+nav a:hover,
+nav a.active {
+    background: #e8491d;
+    color: #ffffff;
+}
+
+main {
+    padding: 20px 0;
+}
+
+section {
+    display: none;
+    background: #fff;
+    margin: 15px 0;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.intro-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    padding: 0 5%;
+}
+
+.profile-image {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 50%;
+    margin: 0 20px 20px 0;
+}
+
+.intro-quote {
+    flex: 1;
+    min-width: 200px;
+    text-align: left;
+}
+
+#search iframe {
+    width: 100%;
+    height: 900px;
+    border: none;
+    overflow: hidden;
+}
+
+#finance iframe {
+    width: 100%;
+    height: 900px;
+    border: none;
+    overflow: hidden;
+}
+
+#news iframe {
+    width: 100%;
+    height: 900px;
+    border: none;
+    overflow: hidden;
+}
+
+section.active {
+    display: block;
+}
+
+h2 {
+    color: #35424a;
+    margin-bottom: 20px;
+}
+
+.game-container {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    /* position: relative;
+    display: inline-block; */
+    /* 保持容器宽度紧随内容 */
+}
+
+.game {
+    width: 45%;
+    min-width: 300px;
+    margin-bottom: 20px;
+}
+
+#tetris-game,
+#spacewar-game {
+    width: 100%;
+    height: 400px;
+    background: #000;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 针对 tetris-game 的样式 */
+#tetris-game {
+    width: 100%;
+    /* 根据需求调整宽度 */
+    height: 500px;
+    /* 根据需求调整高度 */
+    border: 1px solid #ccc;
+    position: relative;
+    overflow: hidden;
+    background-color: #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 全屏按钮样式，放置在父容器的右下角外边缘 */
+#tetris-fullscreen-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    /* 避免负值，使按钮在右下角可见 */
+    padding: 10px;
+    background-color: #333;
+    color: white;
+    border: none;
+    cursor: pointer;
+    z-index: 1000;
+}
+
+.play-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #e8491d;
+    color: white;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.play-button:hover {
+    background-color: #c13a16;
+}
+
+footer {
+    background: #35424a;
+    color: #ffffff;
+    text-align: center;
+    padding: 20px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.intro-content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+blockquote {
+    font-style: italic;
+    border-left: 3px solid #e8491d;
+    padding-left: 20px;
+    margin: 20px 0;
+}
+
+h3 {
+    color: #e8491d;
+    margin-top: 30px;
+    margin-bottom: 15px;
+}
+
+ul {
+    padding-left: 20px;
+}
+
+.achievements,
+.my-works,
+.news-reports {
+    margin-top: 20px;
+}
+
+.achievement-category,
+.work-category {
+    margin-bottom: 20px;
+}
+
+.achievement-category h4,
+.work-category h4 {
+    color: #35424a;
+    margin-bottom: 10px;
+}
+
+a {
+    color: #e8491d;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 769px) {
+    .intro-header {
+        max-width: 1000px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .game {
+        width: 100%;
+    }
+
+    .intro-header {
+        flex-direction: row;
+        padding: 0 20px;
+    }
+
+    .profile-image {
+        margin: 0 20px 20px 0;
+    }
+
+    #tetris-fullscreen-btn {
+        position: static;
+        /* 取消绝对定位 */
+        margin: 10px auto 0 auto;
+        /* 居中并添加上边距 */
+        display: block;
+        width: 100px;
+        /* 可根据需要调整 */
+    }
+
+    /* 确保tetris-game容器为块级元素以支持按钮居中 */
+    #tetris-game {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+}

@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经济数据 - 张小岩的个人网站</title>
+    <!-- 引入Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- 引入Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- 自定义CSS -->
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f4f6f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+
+        header {
+            background-color: #121212;
+            /* 添加背景色以便于区分 */
+            padding: 10px 0;
+            /* 添加一些内边距 */
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .nav-tabs {
+            border-bottom: none;
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-item {
+            margin-bottom: 10px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link {
+            border: none;
+            background-color: #f8f9fa;
+            color: #495057;
+            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link:hover {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            cursor: pointer;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #fff;
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            box-shadow: 0 4px 8px rgba(0, 123, 255, 0.3);
+        }
+
+        .tab-content {
+            border: 1px solid #dee2e6;
+            padding: 20px;
+            background: #fff;
+        }
+
+        /* 优化符号项样式 */
+        .symbol-item {
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+        }
+
+        .symbol-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .symbol-name {
+            font-weight: 500;
+        }
+
+        .symbol-value {
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+
+            /* 使用container-fluid并移除水平内边距，使其占满整个屏幕宽度 */
+            .container-fluid {
+                padding-left: 0 !important;
+                padding-right: 0 !important;
+                margin-top: 0 !important;
+                margin-bottom: 0 !important;
+            }
+
+            /* 移除 nav-tabs 的上下外边距和内边距 */
+            .nav-tabs {
+                margin-top: 0;
+                margin-bottom: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+            }
+
+            .nav-tabs-sticky {
+                position: sticky;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                background-color: #f4f6f9;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+                transition: none;
+                /* 避免滚动时产生视觉上的跳动 */
+            }
+
+            /* 取消滚动时的跳动效果，保持一致的布局 */
+            .nav-tabs-sticky.fixed {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                z-index: 9999;
+                background-color: #f4f6f9;
+                margin-top: 0;
+                padding-top: 0;
+                padding-bottom: 0;
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            }
+
+            /* 移除 nav-item 的上下外边距 */
+            .nav-tabs .nav-item {
+                margin-top: 0;
+                margin-bottom: 0;
+            }
+
+            /* 调整 nav-link 的上下内边距以减少空间 */
+            .nav-tabs .nav-link {
+                padding: 2px 4px;
+                border-radius: 20px;
+                transition: all 0.3s ease;
+                font-size: 1.0rem;
+                /* 放大字体 */
+            }
+
+            /* 放大符号项的字体和内边距 */
+            .symbol-item {
+                padding: 12px 16px;
+                font-size: 1.5rem;
+            }
+
+            /* 放大符号名称 */
+            .symbol-name {
+                font-size: 1.2rem;
+            }
+
+            /* 放大符号值 */
+            .symbol-value {
+                font-size: 1rem;
+            }
+
+            /* 放大模态框标题 */
+            .modal-title {
+                font-size: 1.0rem;
+            }
+
+            /* 调整TAB内容的内边距 */
+            .tab-content {
+                padding: 2px;
+            }
+
+            /* 放大加载指示器的字体 */
+            .loading-overlay p {
+                font-size: 1.2rem;
+            }
+
+            /* 放大错误模态框内容的字体 */
+            #errorModalBody {
+                font-size: 1.1rem;
+            }
+
+            /* 调整Chart Canvas的高度 */
+            #priceChart {
+                height: 200px !important;
+            }
+
+            /* 确保模态框内容全屏显示 */
+            .modal-fullscreen-sm-down .modal-dialog {
+                max-width: 100%;
+                margin: 0;
+            }
+
+            .modal-fullscreen-sm-down .modal-content {
+                height: 100%;
+                border-radius: 0;
+            }
+        }
+
+        /* Modal Custom Styles */
+        .modal-header {
+            background-color: #f8f9fa;
+        }
+
+        .modal-title {
+            font-weight: 600;
+        }
+
+        .close-button {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            line-height: 1;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <nav>
+                <a href="/index.html"><i class="fas fa-index"></i> 首页</a>
+                <a href="/about.html#games"><i class="fas fa-gamepad"></i> 游戏</a>
+                <a href="/news.html"><i class="fas fa-newspaper"></i> 新闻</a>
+                <a href="search.html"><i class="fas fa-search"></i> 搜索</a>
+                <a href="stock.html"><i class="fas fa-search"></i> 股票</a>
+                <a href="/books.html"><i class="fas fa-book"></i> 书籍</a>
+                <a href="/tools.html"><i class="fas fa-tools"></i> 工具</a>
+                <!-- <a href="privacy.html"><i class="fas fa-user-shield"></i> 隐私</a> -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- 加载指示器 -->
+    <div id="loading-indicator" class="loading-overlay">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">加载中...</span>
+        </div>
+        <p class="mt-2">页面加载中，请稍候...</p>
+    </div>
+
+    <div class="container-fluid my-md-5 my-0 px-0">
+        <!-- TAB导航 -->
+        <ul class="nav nav-tabs nav-tabs-sticky" id="sectorTabs" role="tablist">
+            <!-- 动态生成TAB -->
+        </ul>
+        <!-- TAB内容 -->
+        <div class="tab-content" id="sectorTabsContent">
+            <!-- 动态生成内容 -->
+        </div>
+    </div>
+
+    <!-- Chart Modal -->
+    <div class="modal fade modal-fullscreen-sm-down" id="chartModal" tabindex="-1" aria-labelledby="chartModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="chartModalLabel" class="modal-title"></h5>
+                    <button type="button" class="close-button" data-bs-dismiss="modal"
+                        aria-label="Close">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <canvas id="priceChart" width="100%" height="50"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Bootstrap JS和依赖 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 自定义JavaScript -->
+    <script>
+        const marketCapFilePath = "marketcap_pe.txt";
+        // 定义全局变量存储 marketcap_pe 数据
+        let marketCapData = null;
+
+        // 监听 tab 切换事件
+        const sectorTabs = document.getElementById('sectorTabs');
+        sectorTabs.addEventListener('shown.bs.tab', function (event) {
+            // 每次切换 tab 时，将页面滚动到顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // 加载 marketcap_pe.txt 文件
+        async function loadMarketCapData() {
+            if (marketCapData) return marketCapData;
+            try {
+                const response = await fetch(marketCapFilePath);
+                if (!response.ok) throw new Error(`无法加载 MarketCap 数据: ${response.status}`);
+                const text = await response.text();
+                marketCapData = parseMarketCapData(text);
+                return marketCapData;
+            } catch (error) {
+                console.error(error);
+                alert("加载 MarketCap 数据时出错。");
+            }
+        }
+
+        // 解析 marketcap_pe.txt 数据
+        function parseMarketCapData(text) {
+            const data = {};
+            const lines = text.split("\n");
+            for (let line of lines) {
+                const [symbol, values] = line.split(": ");
+                if (symbol && values) {
+                    const [marketCap, peRatio] = values.split(", ");
+                    const parsedMarketCap = parseFloat(marketCap);
+                    // 如果 peRatio 为 "--"，则保留为字符串 "--"，否则解析为数字
+                    const parsedPeRatio = peRatio === "--" ? "--" : parseFloat(peRatio);
+                    data[symbol.toUpperCase()] = { marketCap: parsedMarketCap, peRatio: parsedPeRatio };
+                }
+            }
+            return data;
+        }
+
+        // 将 marketCap 转换为 Billion
+        function formatMarketCap(marketCap) {
+            return (marketCap / 1e9).toFixed(1) + "B"; // 将单位转换为 Billion
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loadingIndicator = document.getElementById('loading-indicator');
+            const sectorTabs = document.getElementById('sectorTabs');
+            const sectorTabsContent = document.getElementById('sectorTabsContent');
+            const DEFAULT_ACTIVE_TAB = 'Indices'; // 设置默认激活的 TAB
+            // 添加滚动事件监听器
+            const navTabs = document.getElementById('sectorTabs');
+            const navTabsOffsetTop = navTabs.offsetTop;
+
+            let financeData = {};
+            let symbolsData = {}; // 用于存储所有的 symbols 数据
+            let marketCapData = await loadMarketCapData(); // 加载 marketcap_pe.txt 数据
+
+            // 初始化所有的 Modal
+            const modals = document.querySelectorAll('.modal');
+            modals.forEach(modal => new bootstrap.Modal(modal));
+
+            // 加载所有需要的JSON文件
+            Promise.all([
+                fetch('sectors_panel.json').then(response => response.json()),
+                fetch('compare_all.txt').then(response => response.text()),
+                fetch('finance.json').then(response => response.json()),
+                fetch('description.json').then(response => response.json()) // 添加description.json的加载
+            ]).then(([sectorsData, txtData, financeJson, descriptionData]) => {
+                financeData = financeJson;
+                symbolsData = sectorsData;
+
+                // 创建一个描述信息的映射，根据symbol来查找
+                const descriptionMap = {};
+
+                // 处理 description.json 中的 stocks 和 etfs 部分，构建 symbol 到 description 的映射
+                descriptionData.stocks.forEach(stock => {
+                    descriptionMap[stock.symbol] = stock;
+                });
+                descriptionData.etfs.forEach(etf => {
+                    descriptionMap[etf.symbol] = etf;
+                });
+
+                // 解析compare_all.txt
+                const compareMap = {};
+                txtData.split('\n').forEach(line => {
+                    const [key, value] = line.split(':').map(item => item.trim());
+                    if (key && value !== undefined) {
+                        compareMap[key] = value;
+                    }
+                });
+
+                const sectors = Object.keys(sectorsData);
+                let activeTabSet = false;
+                let defaultTabExists = false;
+
+                sectors.forEach((sector, index) => {
+                    const symbolsObj = sectorsData[sector];
+                    const symbols = Object.keys(symbolsObj);
+
+                    // 检查这个板块是否有有效的symbol
+                    const validSymbols = symbols.filter(symbol => compareMap.hasOwnProperty(symbol));
+
+                    if (validSymbols.length > 0) {
+                        const isDefaultTab = sector === DEFAULT_ACTIVE_TAB;
+                        if (isDefaultTab) defaultTabExists = true;
+
+                        // 创建TAB
+                        const tab = document.createElement('li');
+                        tab.className = 'nav-item';
+                        const tabButton = document.createElement('button');
+                        tabButton.className = `nav-link ${isDefaultTab ? 'active' : ''}`;
+                        tabButton.id = `${sector}-tab`;
+                        tabButton.setAttribute('data-bs-toggle', 'tab');
+                        tabButton.setAttribute('data-bs-target', `#${sector}`);
+                        tabButton.setAttribute('type', 'button');
+                        tabButton.setAttribute('role', 'tab');
+                        tabButton.setAttribute('aria-controls', sector);
+                        tabButton.setAttribute('aria-selected', isDefaultTab ? 'true' : 'false');
+                        tabButton.textContent = sector.replace(/_/g, ' ');
+                        tab.appendChild(tabButton);
+                        sectorTabs.appendChild(tab);
+
+                        // 创建TAB内容
+                        const tabPane = document.createElement('div');
+                        tabPane.className = `tab-pane fade ${isDefaultTab ? 'show active' : ''}`;
+                        tabPane.id = sector;
+                        tabPane.setAttribute('role', 'tabpanel');
+                        tabPane.setAttribute('aria-labelledby', `${sector}-tab`);
+
+                        validSymbols.forEach(symbol => {
+                            const symbolValue = compareMap[symbol];
+                            const symbolDisplayName = symbolsObj[symbol] || symbol;
+
+                            const symbolItem = document.createElement('div');
+                            symbolItem.className = 'symbol-item';
+                            symbolItem.dataset.symbol = symbol;
+                            symbolItem.dataset.sector = sector;
+
+                            // 左侧名称区域
+                            const nameDiv = document.createElement('div');
+                            nameDiv.className = 'symbol-name';
+                            if (symbolsObj[symbol]) {
+                                nameDiv.textContent = `${symbol} - ${symbolsObj[symbol]}`;
+                            } else {
+                                nameDiv.textContent = symbol;
+                            }
+
+                            // 右侧价格和标签区域
+                            const valueDiv = document.createElement('div');
+                            valueDiv.className = 'symbol-value';
+                            valueDiv.textContent = symbolValue;
+
+                            // 查找 descriptionMap 中的 symbol 信息
+                            const description = descriptionMap[symbol];
+                            if (description && description.tag) {
+                                const tagContent = description.tag.join(', ');
+                                const tagDiv = document.createElement('div');
+                                tagDiv.className = 'symbol-tag';
+                                tagDiv.textContent = `${tagContent}`;
+                                tagDiv.style.color = '#6c757d'; // 灰色
+                                valueDiv.appendChild(tagDiv);
+                            }
+
+                            // 设置 symbolValue 的颜色
+                            if (symbolValue.includes('+')) {
+                                valueDiv.style.color = '#28a745'; // 绿色
+                            } else if (symbolValue.includes('-')) {
+                                valueDiv.style.color = '#dc3545'; // 红色
+                            } else {
+                                valueDiv.style.color = '#28a745'; // 绿色
+                            }
+
+                            symbolItem.appendChild(nameDiv);
+                            symbolItem.appendChild(valueDiv);
+                            tabPane.appendChild(symbolItem);
+                        });
+
+                        sectorTabsContent.appendChild(tabPane);
+
+                        if (!activeTabSet && !isDefaultTab) {
+                            activeTabSet = true;
+                        }
+                    }
+                });
+
+                // 设置默认激活的 TAB
+                if (!defaultTabExists && !activeTabSet) {
+                    const firstTab = sectorTabs.querySelector('.nav-link');
+                    const firstTabPane = sectorTabsContent.querySelector('.tab-pane');
+                    if (firstTab && firstTabPane) {
+                        firstTab.classList.add('active');
+                        firstTab.setAttribute('aria-selected', 'true');
+                        firstTabPane.classList.add('show', 'active');
+                    } else {
+                        sectorTabsContent.innerHTML = '<p class="text-info">暂无可用数据。</p>';
+                    }
+                }
+
+                // 添加点击事件监听器到所有的symbol-item
+                const symbolItems = document.querySelectorAll('.symbol-item');
+                symbolItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const symbol = item.dataset.symbol;
+                        let sector = item.dataset.sector;
+
+                        // 处理板块名称映射
+                        if (['ETFs_US'].includes(sector)) {
+                            sector = 'ETFs';
+                        }
+                        else if (['Economic_All'].includes(sector)) {
+                            sector = 'Economics';
+                        }
+
+                        // 查找finance.json中对应的组别
+                        if (financeData.hasOwnProperty(sector)) {
+                            const sectorData = financeData[sector];
+                            // 查找symbol的数据
+                            const symbolData = sectorData.filter(entry => entry.name === symbol);
+
+                            if (symbolData.length > 0) {
+                                // 按日期排序
+                                symbolData.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+                                // 提取日期和价格
+                                const labels = symbolData.map(entry => entry.date);
+                                const prices = symbolData.map(entry => entry.price);
+
+                                drawChart(symbol, labels, prices);
+                            } else {
+                                showError(`未找到符号 ${symbol} 的财务数据。`);
+                            }
+                        } else {
+                            showError(`未找到板块 ${sector} 的财务数据。`);
+                        }
+                    });
+                });
+                // 隐藏加载指示器
+                loadingIndicator.style.display = 'none';
+
+            }).catch(err => {
+                console.error('加载数据文件时出错:', err);
+                sectorTabsContent.innerHTML = '<p class="text-danger">无法加载必要的数据文件。</p>';
+            });
+
+            window.addEventListener('scroll', handleScroll);
+            window.addEventListener('resize', handleScroll);
+
+            function handleScroll() {
+                if (window.innerWidth <= 768) {
+                    if (window.pageYOffset > navTabsOffsetTop) {
+                        navTabs.classList.add('nav-tabs-sticky');
+                    } else {
+                        navTabs.classList.remove('nav-tabs-sticky');
+                    }
+                } else {
+                    navTabs.classList.remove('nav-tabs-sticky');
+                }
+            }
+
+            window.addEventListener('scroll', handleScroll);
+            window.addEventListener('resize', handleScroll);
+
+            // 显示错误信息
+            function showError(message) {
+                const errorModal = new bootstrap.Modal(document.getElementById('errorModal'));
+                document.getElementById('errorModalBody').textContent = message;
+                errorModal.show();
+            }
+
+            // 绘制Chart.js图表
+            function drawChart(symbol, labels, data) {
+                const ctx = document.getElementById('priceChart').getContext('2d');
+
+                // 释放之前的图表实例（如果有）
+                if (window.priceChartInstance) {
+                    window.priceChartInstance.destroy();
+                }
+
+                // 检测是否为移动设备
+                const isMobile = window.innerWidth <= 768;
+
+                // 检查 symbol 是否在 marketCapData 数据中
+                const symbolData = marketCapData[symbol];
+                let marketCapFormatted = '';
+                let peRatioFormatted = '';
+
+                if (symbolData) {
+                    marketCapFormatted = formatMarketCap(symbolData.marketCap);
+                    peRatioFormatted = symbolData.peRatio !== "--" ? symbolData.peRatio : "--";
+                }
+
+                // 计算百分比变化
+                let priceChangePercentage = '';
+                if (data.length > 1) {
+                    const latestPrice = data[data.length - 1];
+                    const earliestPrice = data[0];
+                    priceChangePercentage = ((latestPrice - earliestPrice) / earliestPrice) * 100;
+                    priceChangePercentage = ` (${priceChangePercentage.toFixed(2)}%)`;
+                } else {
+                    priceChangePercentage = ' (N/A)';
+                }
+
+                // 设置模态框标题：{symbol} {marketCapFormatted} {peRatioFormatted} {priceChangePercentage}
+                const modalTitle = `${symbol} ${marketCapFormatted} ${peRatioFormatted}${priceChangePercentage}`;
+                document.getElementById('chartModalLabel').textContent = modalTitle;
+
+                // 创建图表
+                window.priceChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: '价格趋势',
+                            data: data,
+                            borderColor: '#007bff',
+                            backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                            fill: true,
+                            tension: 0.1,
+                            borderWidth: isMobile ? 1 : 2, // 在移动设备上使用更细的线条
+                            pointRadius: 0, // 移除数据点
+                            pointHitRadius: 5 // 增加点击/触摸区域，但不显示点
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                callbacks: {
+                                    label: function (context) {
+                                        return '价格: $' + context.parsed.y.toFixed(2);
+                                    }
+                                }
+                            },
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            x: {
+                                display: true,
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    display: false // 隐藏 X 轴刻度
+                                }
+                            },
+                            y: {
+                                display: true,
+                                grid: {
+                                    display: false
+                                },
+                                ticks: {
+                                    display: false // 隐藏 Y 轴刻度
+                                }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            intersect: false,
+                            axis: 'x'
+                        },
+                        elements: {
+                            line: {
+                                borderWidth: isMobile ? 1 : 2 // 在移动设备上使用更细的线条
+                            }
+                        }
+                    }
+                });
+
+                // 显示模态框
+                const chartModal = new bootstrap.Modal(document.getElementById('chartModal'));
+                chartModal.show();
+            }
+        });
+    </script>
+
+</body>
+
+</html>

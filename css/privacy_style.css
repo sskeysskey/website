@@ -1,0 +1,111 @@
+body {
+    /* background-image: url('images/background.png'); */
+    background-size: cover;
+    margin: 0;
+    padding: 0;
+    font-family: Arial, sans-serif;
+    background-color: #fff;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 100px;
+    background-color: rgba(255, 255, 255, 0.8);
+}
+
+#logo {
+    height: 50px;
+}
+
+nav {
+    display: flex;
+    gap: 100px;
+}
+
+nav a {
+    text-decoration: none;
+    color: black;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+#buttons {
+    display: flex;
+    gap: 20px;
+}
+
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    text-decoration: none;
+    background-color: #4CAF50;
+    color: white;
+}
+
+main {
+    width: 100%;
+    color: #333;
+}
+
+main hr {
+    border: 1px solid #333;
+    margin: 0;
+}
+
+.content-wrapper {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.content-wrapper h1 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.content-wrapper h2 {
+    font-size: 1.5em;
+    margin: 20px 0;
+}
+
+.content-wrapper p {
+    font-size: 1em;
+    line-height: 1.6;
+}
+
+.email-link {
+    color: #4CAF50;
+    text-decoration: underline;
+}
+
+.email-link:hover {
+    color: #388E3C;
+}
+
+/* Responsive styles */
+@media only screen and (min-width: 601px) {
+    header {
+        flex-wrap: nowrap;
+    }
+    #logo {
+        flex: 0;
+        order: 0;
+    }
+    nav {
+        gap: 50px;
+        flex: 1;
+        justify-content: center;
+    }
+    #buttons {
+        justify-content: flex-end;
+    }
+    main {
+        height: calc(100vh - 70px);
+        font-size: 3em;
+    }
+}
