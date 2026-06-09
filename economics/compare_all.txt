@@ -118,7 +118,7 @@ Palladium: -1.98%--
 PalmOil: 0.46%
 Platinum: -1.63%-
 Poultry: 0.70%
-Rice: 0.96%
+Rice: 0.96%+
 Salmon: 0.00%
 Silver: -0.38%-
 Soybean: -0.65%--
